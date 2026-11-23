@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="USB كاميرا برو">
+  <rect width="512" height="512" rx="116" fill="#0F1B2D"/>
+  <rect x="96" y="92" width="320" height="300" rx="72" fill="#16263F"/>
+  <circle cx="256" cy="242" r="118" fill="none" stroke="#22D3EE" stroke-width="22"/>
+  <circle cx="256" cy="242" r="86" fill="#0B1220"/>
+  <circle cx="352" cy="138" r="14" fill="#22D3EE"/>
+  <g stroke="#FFFFFF" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M256 304 V186"/><path d="M256 276 L222 254 V226"/><path d="M256 258 L290 238 V214"/>
+  </g>
+  <polygon points="256,160 238,190 274,190" fill="#FFFFFF"/>
+  <circle cx="222" cy="218" r="13" fill="#FFFFFF"/>
+  <rect x="279" y="194" width="22" height="22" rx="3" fill="#FFFFFF"/>
+  <circle cx="256" cy="312" r="15" fill="#FFFFFF"/>
+  <rect x="186" y="400" width="140" height="56" rx="28" fill="#22D3EE"/>
+  <text x="256" y="438" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" font-weight="700" fill="#0F1B2D">PRO</text>
+</svg>
