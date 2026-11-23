@@ -23,6 +23,16 @@
   .lead { margin:0; color:var(--muted); font-size:18px; }
   .btn { display:inline-flex; align-items:center; justify-content:center; gap:10px; min-height:56px; padding:0 28px; border-radius:16px; background:var(--accent); color:var(--ink); font-weight:700; font-size:18px; text-decoration:none; align-self:flex-start; }
   .btn:hover { background:#67E8F9; }
+  .btn.ghost { background:none; color:var(--text); border:1px solid var(--border); font-size:16px; min-height:48px; }
+  .btn.ghost:hover { border-color:var(--accent); background:none; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th, td { text-align:start; padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:top; }
+  th { color:var(--muted); font-weight:600; width:34%; }
+  tr:last-child th, tr:last-child td { border-bottom:none; }
+  code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size:12.5px; direction:ltr; unicode-bidi:embed; word-break:break-all; }
+  .table-box { overflow-x:auto; background:var(--surface); border:1px solid var(--border); border-radius:18px; }
+  .ok { color:var(--ok); font-weight:600; }
+  .links { display:flex; flex-wrap:wrap; gap:10px; }
   .meta { color:var(--muted); font-size:14px; }
   section { margin-top:48px; }
   h2 { font-size:22px; margin:0 0 16px; }
@@ -46,6 +56,7 @@
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"></path><path d="M7 10l5 5 5-5"></path><path d="M5 21h14"></path></svg>
         تحميل التطبيق (APK)
       </a>
+      <a class="btn ghost" href="demo.html">جرّبه الآن في المتصفح</a>
       <span class="meta">الإصدار <span id="ver">0.1.0</span> · يتطلب أندرويد 10 فأعلى وجوالًا يدعم OTG</span>
     </div>
   </header>
@@ -59,6 +70,40 @@
       <div class="card"><h3>ضبط الصورة</h3><p>السطوع والتباين والتشبّع والحدّة إن دعمتها الكاميرا.</p></div>
       <div class="card"><h3>المعرض</h3><p>عرض الملفات ومشاركتها وحذفها من داخل التطبيق.</p></div>
       <div class="card"><h3>كاميرا IP والبث المباشر <span class="soon">قريبًا</span></h3><p>خادم RTSP وHTTP، وبث RTMP وSRT، وكشف الحركة.</p></div>
+    </div>
+  </section>
+
+
+  <section id="safety">
+    <h2>التحقق من سلامة الملف</h2>
+    <p class="meta" style="margin:0 0 14px">بيانات الملف المنشور في هذه الصفحة، مستخرجة منه مباشرة. طابق البصمة بعد التحميل للتأكد أن الملف لم يتغيّر.</p>
+    <div class="table-box">
+      <table>
+        <tr><th>اسم الحزمة</th><td><code>com.usbcamerapro.app</code></td></tr>
+        <tr><th>الإصدار</th><td>0.1.0 (رقم البناء 1) · آخر بناء <code id="build2">—</code></td></tr>
+        <tr><th>الحجم</th><td>4.3 ميجابايت (4,310,589 بايت)</td></tr>
+        <tr><th>بصمة SHA-256</th><td><code>995608fa6023f0af78b371841373e4d761a932ea7549a736980cb55f155ff791</code></td></tr>
+        <tr><th>التوقيع</th><td>توقيع أندرويد v2 · بصمة الشهادة <code>F7:F9:26:4F:1C:EF:ED:4E:48:00:AF:64:5B:15:35:7C:3B:B7:49:41:3F:88:7A:56:11:4F:7B:47:22:25:09:48</code></td></tr>
+        <tr><th>الإنترنت</th><td><span class="ok">لا يطلب صلاحية الإنترنت إطلاقًا</span> — لا يستطيع إرسال أي صورة أو بيانات خارج الجوال.</td></tr>
+        <tr><th>الصلاحيات</th><td>
+          الكاميرا — لفتح كاميرا USB<br>
+          الميكروفون — لصوت التسجيل فقط، ويمكن إيقافه من الإعدادات<br>
+          الصور والفيديو — لعرض ما التقطه التطبيق في المعرض<br>
+          الخدمة الأمامية — صلاحية تطلبها مكتبة الكاميرا ولا يستخدمها هذا الإصدار
+        </td></tr>
+        <tr><th>المكوّنات</th><td>شاشة واحدة، بلا خدمات خلفية، وبلا مشاركة بيانات مع تطبيقات أخرى.</td></tr>
+        <tr><th>الحد الأدنى</th><td>أندرويد 10 (API 29) · مبني لأندرويد 15 (API 35)</td></tr>
+      </table>
+    </div>
+    <p class="meta" style="margin:14px 0 0">للفحص المستقل: ارفع الملف إلى <a href="https://www.virustotal.com/gui/home/upload" rel="noopener">VirusTotal</a> ليفحصه بأكثر من 60 محرك حماية، أو تحقّق من البصمة على ويندوز بالأمر <code>certutil -hashfile USBCameraPro.apk SHA256</code> وعلى ماك ولينكس بالأمر <code>shasum -a 256 USBCameraPro.apk</code>.</p>
+  </section>
+
+  <section id="files">
+    <h2>ملفات التحميل</h2>
+    <div class="links">
+      <a class="btn" href="USBCameraPro.apk" download>USBCameraPro.apk</a>
+      <a class="btn ghost" href="SHA256SUMS.txt">SHA256SUMS.txt</a>
+      <a class="btn ghost" href="demo.html">النسخة التجريبية على الويب</a>
     </div>
   </section>
 
@@ -79,7 +124,7 @@
   </footer>
 </div>
 <script>
-  fetch('COMMIT').then(r => r.ok ? r.text() : '').then(t => { if (t) document.getElementById('build').textContent = t.trim().slice(0, 7); }).catch(() => {});
+  fetch('COMMIT').then(r => r.ok ? r.text() : '').then(t => { if (t) const v = t.trim().slice(0, 7); document.getElementById('build').textContent = v; document.getElementById('build2').textContent = v; }).catch(() => {});
 </script>
 </body>
 </html>

@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>USB كاميرا برو — النسخة التجريبية على الويب</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --ink:#0B1220; --deep:#05080F; --surface:#131C2E; --border:#24304A; --text:#E8EEF8; --muted:#9AA8BF; --accent:#22D3EE; --rec:#EF4444; --ok:#34D399; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; background:var(--deep); color:var(--text); font-family:'IBM Plex Sans Arabic', system-ui, sans-serif; }
+  button, select { font: inherit; color: inherit; }
+  .app { max-width: 1100px; margin: 0 auto; padding: 16px; display:flex; flex-direction:column; gap:14px; min-height:100vh; }
+  .bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between; }
+  .brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text); font-weight:700; font-size:18px; }
+  .brand img { width:36px; height:36px; }
+  .chips { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .chip { min-height:32px; padding:0 12px; border-radius:16px; background:var(--surface); font-size:13px; font-weight:600; display:inline-flex; align-items:center; gap:6px; direction:ltr; }
+  .chip.rec { background:#3A1218; color:#FCA5A5; }
+  .dot { width:8px; height:8px; border-radius:50%; background:var(--rec); }
+  .layout { display:flex; flex-wrap:wrap; gap:14px; flex:1; }
+  .stage { flex: 999 1 560px; min-width:0; display:flex; flex-direction:column; gap:12px; }
+  .side { flex: 1 1 280px; min-width:0; display:flex; flex-direction:column; gap:12px; }
+  .view { position:relative; background:#111827; border:1px solid #1F2A3F; border-radius:20px; overflow:hidden; aspect-ratio: 16 / 9; display:flex; align-items:center; justify-content:center; }
+  canvas#out { width:100%; height:100%; object-fit:contain; display:block; }
+  .placeholder { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; color:var(--muted); text-align:center; padding:20px; }
+  .grid { position:absolute; inset:0; pointer-events:none; background:
+      linear-gradient(to right, transparent calc(33.33% - .5px), rgba(255,255,255,.14) calc(33.33% - .5px), rgba(255,255,255,.14) calc(33.33% + .5px), transparent calc(33.33% + .5px), transparent calc(66.66% - .5px), rgba(255,255,255,.14) calc(66.66% - .5px), rgba(255,255,255,.14) calc(66.66% + .5px), transparent calc(66.66% + .5px)),
+      linear-gradient(to bottom, transparent calc(33.33% - .5px), rgba(255,255,255,.14) calc(33.33% - .5px), rgba(255,255,255,.14) calc(33.33% + .5px), transparent calc(33.33% + .5px), transparent calc(66.66% - .5px), rgba(255,255,255,.14) calc(66.66% - .5px), rgba(255,255,255,.14) calc(66.66% + .5px), transparent calc(66.66% + .5px)); }
+  .zoom { position:absolute; left:10px; top:50%; transform:translateY(-50%); display:flex; flex-direction:column; gap:6px; align-items:center; }
+  .zoom span { font-size:12px; direction:ltr; }
+  .icon-btn { width:44px; height:44px; border-radius:12px; border:none; background:var(--surface); display:inline-flex; align-items:center; justify-content:center; cursor:pointer; }
+  .icon-btn.round { border-radius:22px; background:rgba(11,18,32,.75); }
+  .icon-btn:disabled { opacity:.45; cursor:default; }
+  .icon-btn:hover:not(:disabled) { background:#1C2840; }
+  .tools { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+  .modes { display:flex; justify-content:center; }
+  .seg { display:flex; background:var(--surface); border-radius:22px; padding:4px; }
+  .seg button { border:none; background:none; color:var(--muted); font-weight:600; font-size:14px; min-height:36px; padding:0 18px; border-radius:18px; cursor:pointer; }
+  .seg button[aria-pressed="true"] { background:var(--accent); color:var(--ink); }
+  .shutter-row { display:flex; align-items:center; justify-content:space-around; }
+  .shutter { width:80px; height:80px; border-radius:40px; border:4px solid var(--text); background:none; display:flex; align-items:center; justify-content:center; padding:0; cursor:pointer; }
+  .shutter:disabled { border-color:var(--border); cursor:default; }
+  .shutter i { display:block; width:62px; height:62px; border-radius:31px; background:var(--rec); transition: all .15s; }
+  .shutter.photo i { background:var(--text); }
+  .shutter.recording i { width:30px; height:30px; border-radius:8px; }
+  .shutter:disabled i { background:var(--border); }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:16px; display:flex; flex-direction:column; gap:12px; }
+  .card h2 { margin:0; font-size:15px; }
+  label.row { display:flex; flex-direction:column; gap:6px; font-size:14px; }
+  select { background:var(--ink); border:1px solid var(--border); border-radius:12px; min-height:44px; padding:0 12px; }
+  input[type=range] { width:100%; accent-color: var(--accent); }
+  .switch { display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:14px; min-height:36px; }
+  .switch input { width:20px; height:20px; accent-color: var(--accent); }
+  .muted { color:var(--muted); font-size:13px; margin:0; line-height:1.7; }
+  .gallery { display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:6px; }
+  .gallery a { position:relative; aspect-ratio:1; border-radius:10px; overflow:hidden; background:var(--ink); display:block; }
+  .gallery img, .gallery video { width:100%; height:100%; object-fit:cover; display:block; }
+  .gallery .tag { position:absolute; bottom:4px; left:4px; font-size:11px; background:rgba(0,0,0,.6); padding:1px 6px; border-radius:6px; color:#fff; }
+  .btn { display:inline-flex; align-items:center; justify-content:center; min-height:48px; padding:0 20px; border-radius:14px; border:none; background:var(--accent); color:var(--ink); font-weight:700; cursor:pointer; text-decoration:none; }
+  .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--surface); border:1px solid var(--border); padding:10px 18px; border-radius:12px; font-size:14px; opacity:0; transition:opacity .2s; pointer-events:none; }
+  .toast.show { opacity:1; }
+  .note { background:#0F2A33; border:1px solid var(--accent); border-radius:14px; padding:12px 14px; font-size:13px; line-height:1.7; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="bar">
+    <a class="brand" href="./"><img src="icon.svg" alt="">USB كاميرا برو · تجربة الويب</a>
+    <div class="chips">
+      <span class="chip rec" id="recChip" hidden><span class="dot"></span><span id="recTime">00:00</span></span>
+      <span class="chip" id="resChip">—</span>
+    </div>
+  </div>
+
+  <div class="note">هذه نسخة تجريبية للويب تعمل بكاميرا جهازك أو أي كاميرا USB موصولة بالكمبيوتر. لا يُرفع أي شيء لأي خادم: الصور والمقاطع تبقى في جهازك. تطبيق الأندرويد الكامل من <a href="./" style="color:var(--accent)">صفحة التحميل</a>.</div>
+
+  <div class="layout">
+    <div class="stage">
+      <div class="view" id="view">
+        <canvas id="out" aria-label="صورة الكاميرا الحيّة"></canvas>
+        <div class="grid" id="grid"></div>
+        <div class="placeholder" id="ph">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="14" height="12" rx="2"></rect><path d="M16 10l6-3v10l-6-3"></path></svg>
+          <span id="phText">اضغط «تشغيل الكاميرا» واسمح للمتصفح بالوصول إليها</span>
+          <button class="btn" id="startBtn" type="button">تشغيل الكاميرا</button>
+        </div>
+        <div class="zoom">
+          <button class="icon-btn round" id="zoomIn" type="button" aria-label="تكبير">+</button>
+          <span id="zoomVal">1.0×</span>
+          <button class="icon-btn round" id="zoomOut" type="button" aria-label="تصغير">−</button>
+        </div>
+      </div>
+
+      <div class="tools">
+        <button class="icon-btn" id="rotateBtn" type="button" aria-label="تدوير 90 درجة" title="تدوير"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"></path><path d="M21 3v5h-5"></path></svg></button>
+        <button class="icon-btn" id="flipBtn" type="button" aria-label="قلب الصورة" title="قلب"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18"></path><path d="M8 7L3 12l5 5V7z"></path><path d="M16 7l5 5-5 5V7z"></path></svg></button>
+        <button class="icon-btn" id="pipBtn" type="button" aria-label="صورة داخل صورة" title="صورة داخل صورة"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"></rect><rect x="12" y="12" width="7" height="5" rx="1"></rect></svg></button>
+      </div>
+
+      <div class="modes">
+        <div class="seg" role="group" aria-label="الوضع">
+          <button type="button" data-mode="photo" aria-pressed="false">صورة</button>
+          <button type="button" data-mode="video" aria-pressed="true">فيديو</button>
+        </div>
+      </div>
+
+      <div class="shutter-row">
+        <a class="icon-btn" href="#gallery" aria-label="المعرض"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="M21 15l-5-5L5 21"></path></svg></a>
+        <button class="shutter" id="shutter" type="button" aria-label="بدء التسجيل" disabled><i></i></button>
+        <button class="icon-btn" id="snapBtn" type="button" aria-label="التقاط صورة" disabled><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></button>
+      </div>
+    </div>
+
+    <div class="side">
+      <section class="card">
+        <h2>الكاميرا</h2>
+        <label class="row">الجهاز
+          <select id="camSel" disabled><option>—</option></select>
+        </label>
+        <label class="row">الدقة
+          <select id="resSel">
+            <option value="640x480">640×480</option>
+            <option value="1280x720" selected>1280×720</option>
+            <option value="1920x1080">1920×1080</option>
+            <option value="3840x2160">3840×2160</option>
+          </select>
+        </label>
+        <div class="switch"><span>تسجيل الصوت</span><input type="checkbox" id="audioChk" checked aria-label="تسجيل الصوت"></div>
+        <div class="switch"><span>الشبكة المساعدة</span><input type="checkbox" id="gridChk" checked aria-label="الشبكة المساعدة"></div>
+        <div class="switch"><span>الوقت والتاريخ على الصورة</span><input type="checkbox" id="stampChk" aria-label="الوقت والتاريخ على الصورة"></div>
+      </section>
+
+      <section class="card">
+        <h2>ضبط الصورة</h2>
+        <label class="row">السطوع <input type="range" id="bri" min="50" max="150" value="100"></label>
+        <label class="row">التباين <input type="range" id="con" min="50" max="150" value="100"></label>
+        <label class="row">التشبّع <input type="range" id="sat" min="0" max="200" value="100"></label>
+        <button class="icon-btn" id="resetAdj" type="button" style="width:auto; padding:0 14px; font-size:14px">إعادة الضبط</button>
+      </section>
+
+      <section class="card" id="gallery">
+        <h2>المعرض (هذه الجلسة)</h2>
+        <div class="gallery" id="gal"></div>
+        <p class="muted" id="galEmpty">لا توجد صور أو مقاطع بعد. اضغط على أي ملف لتنزيله.</p>
+      </section>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const out = $('out'), ctx = out.getContext('2d');
+  const video = document.createElement('video');
+  video.muted = true; video.playsInline = true;
+  let stream = null, rotation = 0, mirrored = false, zoom = 1, mode = 'video';
+  let recorder = null, chunks = [], recStart = 0, recTimer = null;
+
+  const toast = (t) => { const el = $('toast'); el.textContent = t; el.classList.add('show'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2200); };
+  const fmt = (s) => { const m = Math.floor(s / 60), x = s % 60; return String(m).padStart(2, '0') + ':' + String(x).padStart(2, '0'); };
+  const stamp = () => { const d = new Date(), p = (n) => String(n).padStart(2, '0'); return d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '_' + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds()); };
+
+  async function listCams(selectedId) {
+    const devs = (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind === 'videoinput');
+    const sel = $('camSel'); sel.innerHTML = '';
+    devs.forEach((d, i) => { const o = document.createElement('option'); o.value = d.deviceId; o.textContent = d.label || ('كاميرا ' + (i + 1)); if (d.deviceId === selectedId) o.selected = true; sel.appendChild(o); });
+    sel.disabled = devs.length === 0;
+  }
+
+  async function start(deviceId) {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { $('phText').textContent = 'متصفحك لا يدعم الوصول إلى الكاميرا.'; return; }
+    if (stream) stream.getTracks().forEach((t) => t.stop());
+    const [w, h] = $('resSel').value.split('x').map(Number);
+    const video_c = { width: { ideal: w }, height: { ideal: h } };
+    if (deviceId) video_c.deviceId = { exact: deviceId };
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: video_c, audio: $('audioChk').checked });
+    } catch (e) {
+      try { stream = await navigator.mediaDevices.getUserMedia({ video: video_c, audio: false }); $('audioChk').checked = false; }
+      catch (e2) { $('phText').textContent = 'تعذّر تشغيل الكاميرا: اسمح للمتصفح بالوصول إليها أو تأكد من توصيلها.'; return; }
+    }
+    video.srcObject = stream; await video.play();
+    const vt = stream.getVideoTracks()[0], st = vt.getSettings();
+    $('resChip').textContent = (st.width || video.videoWidth) + '×' + (st.height || video.videoHeight) + (st.frameRate ? ' · ' + Math.round(st.frameRate) + 'fps' : '');
+    $('ph').style.display = 'none';
+    $('shutter').disabled = false; $('snapBtn').disabled = false;
+    await listCams(st.deviceId);
+  }
+
+  function frameSize() {
+    const vw = video.videoWidth || 1280, vh = video.videoHeight || 720;
+    return rotation % 180 === 0 ? [vw, vh] : [vh, vw];
+  }
+
+  function draw(target, c) {
+    const [W, H] = frameSize();
+    if (target.width !== W || target.height !== H) { target.width = W; target.height = H; }
+    c.save();
+    c.fillStyle = '#000'; c.fillRect(0, 0, W, H);
+    c.filter = 'brightness(' + $('bri').value + '%) contrast(' + $('con').value + '%) saturate(' + $('sat').value + '%)';
+    c.translate(W / 2, H / 2);
+    c.rotate(rotation * Math.PI / 180);
+    c.scale((mirrored ? -1 : 1) * zoom, zoom);
+    c.drawImage(video, -video.videoWidth / 2, -video.videoHeight / 2);
+    c.restore();
+    if ($('stampChk').checked) {
+      const t = new Date().toLocaleString('en-GB', { hour12: false });
+      const fs = Math.max(14, Math.round(H / 28));
+      c.font = '600 ' + fs + 'px system-ui, sans-serif';
+      const tw = c.measureText(t).width;
+      c.fillStyle = 'rgba(0,0,0,.55)'; c.fillRect(W - tw - fs * 1.4, H - fs * 2.2, tw + fs, fs * 1.6);
+      c.fillStyle = '#fff'; c.textBaseline = 'middle'; c.fillText(t, W - tw - fs * 0.9, H - fs * 1.4);
+    }
+  }
+
+  function loop() {
+    if (video.readyState >= 2) {
+      draw(out, ctx);
+      const [W, H] = frameSize();
+      $('view').style.aspectRatio = W + ' / ' + H;
+    }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  function addToGallery(blob, isVideo, name) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = name; a.title = name;
+    const m = document.createElement(isVideo ? 'video' : 'img');
+    m.src = url; if (isVideo) { m.muted = true; m.preload = 'metadata'; } else { m.alt = 'صورة ملتقطة'; }
+    a.appendChild(m);
+    if (isVideo) { const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = 'فيديو'; a.appendChild(tag); }
+    $('gal').prepend(a); $('galEmpty').hidden = true;
+  }
+
+  function snap() {
+    out.toBlob((b) => { if (b) { addToGallery(b, false, 'IMG_' + stamp() + '.jpg'); toast('حُفظت الصورة في المعرض'); } }, 'image/jpeg', 0.92);
+  }
+
+  function pickMime() {
+    const list = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm'];
+    return list.find((m) => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || '';
+  }
+
+  function toggleRec() {
+    if (recorder && recorder.state === 'recording') { recorder.stop(); return; }
+    if (!window.MediaRecorder) { toast('متصفحك لا يدعم التسجيل'); return; }
+    const s = out.captureStream(30);
+    if ($('audioChk').checked && stream) stream.getAudioTracks().forEach((t) => s.addTrack(t));
+    const mime = pickMime();
+    recorder = new MediaRecorder(s, mime ? { mimeType: mime } : undefined);
+    chunks = [];
+    recorder.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
+    recorder.onstop = () => {
+      const type = recorder.mimeType || 'video/webm';
+      const ext = type.includes('mp4') ? '.mp4' : '.webm';
+      addToGallery(new Blob(chunks, { type }), true, 'VID_' + stamp() + ext);
+      clearInterval(recTimer); $('recChip').hidden = true;
+      $('shutter').classList.remove('recording'); $('shutter').setAttribute('aria-label', 'بدء التسجيل');
+      toast('حُفظ المقطع في المعرض');
+    };
+    recorder.start(1000); recStart = Date.now();
+    $('recChip').hidden = false; $('recTime').textContent = '00:00';
+    recTimer = setInterval(() => { $('recTime').textContent = fmt(Math.floor((Date.now() - recStart) / 1000)); }, 500);
+    $('shutter').classList.add('recording'); $('shutter').setAttribute('aria-label', 'إيقاف التسجيل');
+  }
+
+  $('startBtn').onclick = () => start();
+  $('camSel').onchange = (e) => start(e.target.value);
+  $('resSel').onchange = () => { if (stream) start($('camSel').value); };
+  $('audioChk').onchange = () => { if (stream && !(recorder && recorder.state === 'recording')) start($('camSel').value); };
+  $('gridChk').onchange = (e) => { $('grid').hidden = !e.target.checked; };
+  $('rotateBtn').onclick = () => { rotation = (rotation + 90) % 360; };
+  $('flipBtn').onclick = () => { mirrored = !mirrored; };
+  $('zoomIn').onclick = () => { zoom = Math.min(4, zoom + 0.5); $('zoomVal').textContent = zoom.toFixed(1) + '×'; };
+  $('zoomOut').onclick = () => { zoom = Math.max(1, zoom - 0.5); $('zoomVal').textContent = zoom.toFixed(1) + '×'; };
+  $('resetAdj').onclick = () => { $('bri').value = 100; $('con').value = 100; $('sat').value = 100; };
+  $('snapBtn').onclick = snap;
+  $('shutter').onclick = () => (mode === 'photo' ? snap() : toggleRec());
+  $('pipBtn').onclick = async () => {
+    try {
+      if (document.pictureInPictureElement) { await document.exitPictureInPicture(); return; }
+      const pv = document.createElement('video'); pv.muted = true; pv.srcObject = out.captureStream(30); await pv.play();
+      await pv.requestPictureInPicture();
+    } catch (e) { toast('صورة داخل صورة غير مدعومة في هذا المتصفح'); }
+  };
+  document.querySelectorAll('.seg button').forEach((b) => b.onclick = () => {
+    if (recorder && recorder.state === 'recording') return;
+    mode = b.dataset.mode;
+    document.querySelectorAll('.seg button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    $('shutter').classList.toggle('photo', mode === 'photo');
+    $('shutter').setAttribute('aria-label', mode === 'photo' ? 'التقاط صورة' : 'بدء التسجيل');
+  });
+  if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
+    navigator.mediaDevices.addEventListener('devicechange', () => { if (stream) listCams($('camSel').value); toast('تغيّرت الأجهزة الموصولة'); });
+  }
+})();
+</script>
+</body>
+</html>
